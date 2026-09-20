@@ -98,14 +98,9 @@ Already done if you cloned from the repo.
 
 ### 3. Deploy frontend on Vercel
 
-1. Go to [vercel.com](https://vercel.com) → **Add New Project**
-2. Import the same GitHub repo
-3. **Framework Preset** → Other (not Python)
-4. Vercel reads `vercel.json` — output is the `static/` folder only
-5. Add environment variable:
-   - `MUSICALLY_API_URL` = your Render backend URL (no trailing slash)
-6. Deploy
+See **[VERCEL_SETUP.md](VERCEL_SETUP.md)**. The two settings that matter:
 
-Your app will be live at `https://your-project.vercel.app`.
+1. **Application Preset → Other** (not FastAPI)
+2. **Root Directory → `static`**
 
-> **Vercel tip:** If you still see `uv pip install` errors, open Project Settings → General → Root Directory and leave it blank (repo root). Python files now live in `backend/` so Vercel won't try to install them.
+Then set `MUSICALLY_API_URL` to your Render URL and deploy.

@@ -1,0 +1,8 @@
+{
+  "name": "musically",
+  "private": true,
+  "description": "Static frontend for Musically. Backend is Python on Render, not Vercel.",
+  "scripts": {
+    "build": "node scripts/write-config.js"
+  }
+}
