@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Musically — YouTube Stem Extractor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-glow bg-glow--1"></div>
+  <div class="bg-glow bg-glow--2"></div>
+
+  <main class="container">
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">♪</span>
+        <h1>Musically</h1>
+      </div>
+      <p class="tagline">Drop a YouTube beat link. Get separated stems ready for FL Studio.</p>
+    </header>
+
+    <section class="card input-card">
+      <label for="url-input" class="label">YouTube URL</label>
+      <div class="input-row">
+        <input
+          id="url-input"
+          type="url"
+          placeholder="https://www.youtube.com/watch?v=..."
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button id="extract-btn" type="button">Extract Stems</button>
+      </div>
+      <p class="hint">Outputs WAV stems: drums, bass, other, vocals — drag straight into FL Studio.</p>
+    </section>
+
+    <section id="progress-section" class="card progress-card hidden">
+      <div class="progress-header">
+        <span id="progress-status" class="progress-status">Starting...</span>
+        <span id="progress-percent" class="progress-percent">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div id="progress-fill" class="progress-fill"></div>
+      </div>
+      <p id="progress-message" class="progress-message"></p>
+      <p id="track-title" class="track-title"></p>
+    </section>
+
+    <section id="results-section" class="card results-card hidden">
+      <h2>Your Stems</h2>
+      <p class="results-sub">Download individual tracks or grab everything as a ZIP.</p>
+      <div id="stems-grid" class="stems-grid"></div>
+      <button id="download-all-btn" class="download-all-btn" type="button">
+        Download All Stems (.zip)
+      </button>
+    </section>
+
+    <section id="error-section" class="card error-card hidden">
+      <h2>Something went wrong</h2>
+      <p id="error-message"></p>
+      <button id="retry-btn" type="button" class="retry-btn">Try Again</button>
+    </section>
+
+    <footer class="footer">
+      <p>Powered by Demucs AI · WAV format · For personal use only</p>
+    </footer>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
