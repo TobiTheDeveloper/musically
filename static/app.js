@@ -21,7 +21,7 @@ const STEM_ICONS = {
   vocals: "🎤",
 };
 
-const urlInput = document.getElementById("url-input");
+const fileInput = document.getElementById("file-input");
 const apiUrlInput = document.getElementById("api-url-input");
 const apiStatus = document.getElementById("api-status");
 const extractBtn = document.getElementById("extract-btn");
@@ -165,22 +165,35 @@ async function pollJob(jobId) {
   }
 }
 
-async function startExtraction() {
-  const url = urlInput.value.trim();
-  if (!url) {
-    urlInput.focus();
-    return;
-  }
-
+async function ensureBackend() {
   API_BASE = apiUrlInput.value.trim().replace(/\/$/, "");
   if (API_BASE) {
     localStorage.setItem("MUSICALLY_API_URL", API_BASE);
   }
-
   if (!API_BASE || API_BASE.includes("vercel.app")) {
-    showError(
+    throw new Error(
       "Paste your Render backend URL in the Backend URL field (it should end with .onrender.com), not the Vercel site."
     );
+  }
+  const health = await fetch(`${API_BASE}/api/health`);
+  const healthData = await readJson(health);
+  if (!health.ok || !healthData.ok) {
+    throw new Error(
+      "Render backend is not ready yet. Open the Render URL in a browser, wait until it loads, then try again."
+    );
+  }
+}
+
+function watchJob(jobId) {
+  currentJobId = jobId;
+  pollTimer = setInterval(() => pollJob(currentJobId), 2000);
+  pollJob(currentJobId);
+}
+
+async function startExtraction() {
+  const url = urlInput.value.trim();
+  if (!url) {
+    urlInput.focus();
     return;
   }
 
@@ -190,13 +203,8 @@ async function startExtraction() {
   updateProgress({ status: "pending", progress: 0, message: "Connecting to backend..." });
 
   try {
-    const health = await fetch(`${API_BASE}/api/health`);
-    const healthData = await readJson(health);
-    if (!health.ok || !healthData.ok) {
-      throw new Error("Render backend is not ready yet. Open the Render URL in a browser, wait until it loads, then try again.");
-    }
-
-    updateProgress({ status: "pending", progress: 5, message: "Submitting..." });
+    await ensureBackend();
+    updateProgress({ status: "pending", progress: 5, message: "Submitting YouTube link..." });
 
     const res = await fetch(`${API_BASE}/api/process`, {
       method: "POST",
@@ -206,10 +214,31 @@ async function startExtraction() {
 
     const data = await readJson(res);
     if (!res.ok) throw new Error(data.detail || "Failed to start processing.");
+    watchJob(data.job_id);
+  } catch (err) {
+    showError(err.message);
+  }
+}
 
-    currentJobId = data.job_id;
-    pollTimer = setInterval(() => pollJob(currentJobId), 2000);
-    pollJob(currentJobId);
+async function startFileExtraction(file) {
+  if (!file) return;
+
+  extractBtn.disabled = true;
+  hideAllSections();
+  progressSection.classList.remove("hidden");
+  updateProgress({ status: "pending", progress: 0, message: `Uploading ${file.name}...` });
+
+  try {
+    await ensureBackend();
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`${API_BASE}/api/process-file`, {
+      method: "POST",
+      body: form,
+    });
+    const data = await readJson(res);
+    if (!res.ok) throw new Error(data.detail || "Failed to start processing.");
+    watchJob(data.job_id);
   } catch (err) {
     showError(err.message);
   }
@@ -220,14 +249,27 @@ urlInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") startExtraction();
 });
 
+fileInput.addEventListener("change", () => {
+  if (fileInput.files[0]) startFileExtraction(fileInput.files[0]);
+});
+
 retryBtn.addEventListener("click", () => {
   errorSection.classList.add("hidden");
-  startExtraction();
+  if (fileInput.files[0]) {
+    startFileExtraction(fileInput.files[0]);
+  } else {
+    startExtraction();
+  }
 });
 
 document.addEventListener("dragover", (e) => e.preventDefault());
 document.addEventListener("drop", (e) => {
   e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith("audio")) {
+    startFileExtraction(file);
+    return;
+  }
   const text = e.dataTransfer.getData("text");
   if (text && (text.includes("youtube.com") || text.includes("youtu.be"))) {
     urlInput.value = text;

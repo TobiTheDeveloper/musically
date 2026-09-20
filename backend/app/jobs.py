@@ -26,7 +26,8 @@ class JobStatus(str, Enum):
 @dataclass
 class Job:
     id: str
-    url: str
+    url: str = ""
+    local_file: str = ""
     status: JobStatus = JobStatus.PENDING
     progress: int = 0
     message: str = "Queued..."
@@ -56,9 +57,9 @@ def get_job(job_id: str) -> Job | None:
     return _jobs.get(job_id)
 
 
-def create_job(url: str) -> Job:
+def create_job(url: str = "", local_file: str = "", title: str = "") -> Job:
     job_id = uuid.uuid4().hex[:12]
-    job = Job(id=job_id, url=url)
+    job = Job(id=job_id, url=url, local_file=local_file, title=title)
     _jobs[job_id] = job
     return job
 
@@ -68,17 +69,26 @@ async def run_job(job: Job) -> None:
     job_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        job.status = JobStatus.DOWNLOADING
-        job.progress = 10
-        job.message = "Downloading audio from YouTube..."
-
         loop = asyncio.get_event_loop()
-        audio_path, title = await loop.run_in_executor(
-            None, download_audio, job.url, job_dir, job.id
-        )
-        job.title = title
+
+        if job.local_file:
+            job.status = JobStatus.DOWNLOADING
+            job.progress = 20
+            job.message = "Using uploaded audio..."
+            audio_path = Path(job.local_file)
+            if not job.title:
+                job.title = audio_path.stem
+        else:
+            job.status = JobStatus.DOWNLOADING
+            job.progress = 10
+            job.message = "Downloading audio from YouTube..."
+            audio_path, title = await loop.run_in_executor(
+                None, download_audio, job.url, job_dir, job.id
+            )
+            job.title = title
+
         job.progress = 40
-        job.message = f"Downloaded: {title}"
+        job.message = f"Ready: {job.title}"
 
         job.status = JobStatus.SEPARATING
         job.progress = 50

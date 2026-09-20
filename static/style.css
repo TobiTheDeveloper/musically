@@ -191,6 +191,13 @@ button:disabled {
   border-color: var(--accent);
 }
 
+#file-input {
+  width: 100%;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
 .hidden {
   display: none !important;
 }

@@ -1,14 +1,15 @@
 import asyncio
 import os
+import shutil
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from app.jobs import JobStatus, create_job, create_stems_zip, get_job, run_job
+from app.jobs import JOBS_DIR, JobStatus, create_job, create_stems_zip, get_job, run_job
 from app.services.downloader import is_valid_youtube_url
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -74,6 +75,31 @@ async def process_youtube(request: ProcessRequest):
     job = create_job(url)
     asyncio.create_task(run_job(job))
 
+    return {"job_id": job.id, "status": job.status.value}
+
+
+ALLOWED_AUDIO = {".wav", ".mp3", ".m4a", ".flac", ".ogg", ".aac", ".webm"}
+
+
+@app.post("/api/process-file")
+async def process_file(file: UploadFile = File(...)):
+    suffix = Path(file.filename or "beat.wav").suffix.lower()
+    if suffix not in ALLOWED_AUDIO:
+        raise HTTPException(
+            status_code=400,
+            detail="Upload a WAV, MP3, M4A, FLAC, OGG, AAC, or WEBM file.",
+        )
+
+    job = create_job(title=Path(file.filename or "uploaded-beat").stem)
+    job_dir = JOBS_DIR / job.id
+    job_dir.mkdir(parents=True, exist_ok=True)
+    dest = job_dir / f"{job.id}{suffix}"
+
+    with dest.open("wb") as out:
+        shutil.copyfileobj(file.file, out)
+
+    job.local_file = str(dest)
+    asyncio.create_task(run_job(job))
     return {"job_id": job.id, "status": job.status.value}
 
 
