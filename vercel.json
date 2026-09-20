@@ -1,5 +1,6 @@
 {
-  "buildCommand": "node scripts/write-config.js",
+  "installCommand": "node scripts/write-config.js",
+  "buildCommand": "",
   "outputDirectory": "static",
   "framework": null
 }
