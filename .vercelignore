@@ -1,9 +1,0 @@
-app/
-venv/
-jobs/
-*.py
-requirements.txt
-render.yaml
-build.sh
-runtime.txt
-Procfile

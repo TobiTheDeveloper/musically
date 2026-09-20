@@ -1,6 +1,7 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "node scripts/write-config.js",
-  "buildCommand": "",
+  "buildCommand": "echo Static frontend ready",
   "outputDirectory": "static",
   "framework": null
 }

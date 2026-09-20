@@ -3,6 +3,7 @@ __pycache__/
 .env
 .venv/
 venv/
+backend/jobs/
 jobs/
 *.wav
 *.zip

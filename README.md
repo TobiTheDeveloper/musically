@@ -20,13 +20,16 @@ Paste a YouTube beat link and get separated WAV stems (drums, bass, other, vocal
 cd musically
 python -m venv venv
 venv\Scripts\activate        # Windows
+cd backend
+pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt
+pip install demucs
 ```
 
 ## Run
 
 ```bash
-python run.py
+cd backend && python run.py
 ```
 
 Open **http://127.0.0.1:8000** in your browser.
@@ -85,9 +88,12 @@ If you see `uv pip install` errors, redeploy after pulling latest — PyTorch wa
 
 1. Go to [vercel.com](https://vercel.com) → **Add New Project**
 2. Import the same GitHub repo
-3. Vercel auto-detects `vercel.json`
-4. Add environment variable:
+3. **Framework Preset** → Other (not Python)
+4. Vercel reads `vercel.json` — output is the `static/` folder only
+5. Add environment variable:
    - `MUSICALLY_API_URL` = your Render backend URL (no trailing slash)
-5. Deploy
+6. Deploy
 
 Your app will be live at `https://your-project.vercel.app`.
+
+> **Vercel tip:** If you still see `uv pip install` errors, open Project Settings → General → Root Directory and leave it blank (repo root). Python files now live in `backend/` so Vercel won't try to install them.

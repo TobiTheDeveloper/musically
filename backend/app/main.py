@@ -11,8 +11,10 @@ from pydantic import BaseModel
 from app.jobs import JobStatus, create_job, create_stems_zip, get_job, run_job
 from app.services.downloader import is_valid_youtube_url
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-STATIC_DIR = BASE_DIR / "static"
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+REPO_ROOT = BACKEND_DIR.parent
+STATIC_DIR = REPO_ROOT / "static"
+BASE_DIR = BACKEND_DIR
 
 app = FastAPI(title="Musically", description="YouTube beat stem extractor for FL Studio")
 
