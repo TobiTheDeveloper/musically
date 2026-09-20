@@ -74,15 +74,27 @@ Already done if you cloned from the repo.
 
 ### 2. Deploy backend on Render
 
-1. Go to [render.com](https://render.com) → **New → Blueprint**
-2. Connect your GitHub repo — Render reads `render.yaml`
-3. Use at least the **Starter** plan (free tier is too small for PyTorch)
-4. Build command must be: `bash build.sh` (installs CPU PyTorch first, then Demucs)
-5. Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-6. Set env var `ALLOWED_ORIGINS` to your Vercel URL, e.g. `https://musically.vercel.app`
-7. Copy your Render URL, e.g. `https://musically-api.onrender.com`
+1. Go to [render.com](https://render.com) → **New Web Service**
+2. Connect repo **TobiTheDeveloper/musically**, branch **main**
+3. Use at least the **Starter ($7/mo)** plan — Free tier is too small for PyTorch
+4. Fill in these settings exactly:
 
-If you see `uv pip install` errors, redeploy after pulling latest — PyTorch was removed from `requirements.txt` so the auto-install step no longer fails.
+| Field | Value |
+|-------|--------|
+| **Root Directory** | *(leave blank)* |
+| **Build Command** | `bash build.sh` |
+| **Start Command** | `cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT` |
+
+5. Add environment variables:
+
+| Key | Value |
+|-----|--------|
+| `PYTHON_VERSION` | `3.11.11` |
+| `ALLOWED_ORIGINS` | your Vercel URL, e.g. `https://musically.vercel.app` |
+
+6. Deploy and copy your Render URL, e.g. `https://musically-api.onrender.com`
+
+> **Do not use** `pip install -r requirements.txt` or `gunicorn` — those are wrong defaults. Python must be **3.11**, not 3.14.
 
 ### 3. Deploy frontend on Vercel
 
