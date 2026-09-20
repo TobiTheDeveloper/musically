@@ -1,14 +1,12 @@
 import asyncio
 import shutil
 import uuid
-import zipfile
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 
-from app.services.downloader import download_audio, is_valid_youtube_url
-from app.services.separator import separate_stems
+from app.services.downloader import download_audio
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 JOBS_DIR = BASE_DIR / "jobs"
@@ -18,7 +16,6 @@ JOBS_DIR.mkdir(exist_ok=True)
 class JobStatus(str, Enum):
     PENDING = "pending"
     DOWNLOADING = "downloading"
-    SEPARATING = "separating"
     COMPLETED = "completed"
     FAILED = "failed"
 
@@ -32,7 +29,7 @@ class Job:
     progress: int = 0
     message: str = "Queued..."
     title: str = ""
-    stems: dict[str, str] = field(default_factory=dict)
+    file: str = ""
     error: str = ""
     created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
@@ -44,7 +41,7 @@ class Job:
             "progress": self.progress,
             "message": self.message,
             "title": self.title,
-            "stems": self.stems,
+            "file": self.file,
             "error": self.error,
             "created_at": self.created_at,
         }
@@ -73,52 +70,27 @@ async def run_job(job: Job) -> None:
 
         if job.local_file:
             job.status = JobStatus.DOWNLOADING
-            job.progress = 20
-            job.message = "Using uploaded audio..."
+            job.progress = 40
+            job.message = "Preparing uploaded beat..."
             audio_path = Path(job.local_file)
             if not job.title:
                 job.title = audio_path.stem
         else:
             job.status = JobStatus.DOWNLOADING
-            job.progress = 10
-            job.message = "Downloading audio from YouTube..."
+            job.progress = 15
+            job.message = "Downloading beat from YouTube..."
             audio_path, title = await loop.run_in_executor(
                 None, download_audio, job.url, job_dir, job.id
             )
             job.title = title
 
-        job.progress = 40
-        job.message = f"Ready: {job.title}"
-
-        job.status = JobStatus.SEPARATING
-        job.progress = 50
-        job.message = "Separating stems (drums, bass, other, vocals)... This may take a few minutes."
-
-        stems_dir = job_dir / "stems"
-        stems = await loop.run_in_executor(None, separate_stems, audio_path, stems_dir)
-
-        job.stems = {name: str(path.relative_to(BASE_DIR)) for name, path in stems.items()}
+        job.file = str(audio_path.relative_to(BASE_DIR))
         job.status = JobStatus.COMPLETED
         job.progress = 100
-        job.message = "Done! Download your stems below."
+        job.message = "Done! Download the WAV and drop it into FL Studio."
 
     except Exception as exc:
         job.status = JobStatus.FAILED
         job.error = str(exc)
         job.message = f"Failed: {exc}"
         shutil.rmtree(job_dir, ignore_errors=True)
-
-
-def create_stems_zip(job_id: str) -> Path | None:
-    job = get_job(job_id)
-    if not job or job.status != JobStatus.COMPLETED:
-        return None
-
-    job_dir = JOBS_DIR / job_id / "stems"
-    zip_path = JOBS_DIR / job_id / f"{job_id}_stems.zip"
-
-    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-        for stem_file in sorted(job_dir.glob("*.wav")):
-            zf.write(stem_file, arcname=stem_file.name)
-
-    return zip_path

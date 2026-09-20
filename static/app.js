@@ -14,13 +14,7 @@ function resolveApiBase() {
 
 let API_BASE = resolveApiBase();
 
-const STEM_ICONS = {
-  drums: "🥁",
-  bass: "🎸",
-  other: "🎹",
-  vocals: "🎤",
-};
-
+const urlInput = document.getElementById("url-input");
 const fileInput = document.getElementById("file-input");
 const apiUrlInput = document.getElementById("api-url-input");
 const apiStatus = document.getElementById("api-status");
@@ -32,8 +26,8 @@ const progressFill = document.getElementById("progress-fill");
 const progressMessage = document.getElementById("progress-message");
 const trackTitle = document.getElementById("track-title");
 const resultsSection = document.getElementById("results-section");
-const stemsGrid = document.getElementById("stems-grid");
-const downloadAllBtn = document.getElementById("download-all-btn");
+const resultsTitle = document.getElementById("results-title");
+const downloadBtn = document.getElementById("download-btn");
 const errorSection = document.getElementById("error-section");
 const errorMessage = document.getElementById("error-message");
 const retryBtn = document.getElementById("retry-btn");
@@ -96,34 +90,12 @@ function updateProgress(job) {
 function showResults(job) {
   hideAllSections();
   resultsSection.classList.remove("hidden");
-  stemsGrid.innerHTML = "";
-
-  const stemOrder = ["drums", "bass", "other", "vocals"];
-  for (const stem of stemOrder) {
-    if (!job.stems[stem]) continue;
-
-    const item = document.createElement("div");
-    item.className = "stem-item";
-    item.innerHTML = `
-      <span class="stem-name">
-        <span class="stem-icon">${STEM_ICONS[stem] || "🎵"}</span>
-        ${stem}
-      </span>
-      <button class="stem-download" data-stem="${stem}">Download .wav</button>
-    `;
-    stemsGrid.appendChild(item);
-  }
-
-  stemsGrid.querySelectorAll(".stem-download").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      window.location.href = `${API_BASE}/api/jobs/${job.id}/download/${btn.dataset.stem}`;
-    });
-  });
-
-  downloadAllBtn.onclick = () => {
-    window.location.href = `${API_BASE}/api/jobs/${job.id}/download-all`;
+  resultsTitle.textContent = job.title
+    ? `"${job.title}" — drag this WAV into FL Studio.`
+    : "WAV file ready for FL Studio.";
+  downloadBtn.onclick = () => {
+    window.location.href = `${API_BASE}/api/jobs/${job.id}/download`;
   };
-
   extractBtn.disabled = false;
 }
 
@@ -157,7 +129,7 @@ async function pollJob(jobId) {
       showResults(job);
     } else if (job.status === "failed") {
       clearInterval(pollTimer);
-      showError(job.error || "Processing failed.");
+      showError(job.error || "Download failed.");
     }
   } catch (err) {
     clearInterval(pollTimer);
@@ -213,7 +185,7 @@ async function startExtraction() {
     });
 
     const data = await readJson(res);
-    if (!res.ok) throw new Error(data.detail || "Failed to start processing.");
+    if (!res.ok) throw new Error(data.detail || "Failed to start download.");
     watchJob(data.job_id);
   } catch (err) {
     showError(err.message);

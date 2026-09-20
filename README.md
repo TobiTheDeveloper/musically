@@ -1,18 +1,16 @@
-# Musically — YouTube Beat Stem Extractor
+# Musically — YouTube Beat Downloader
 
-Paste a YouTube beat link and get separated WAV stems (drums, bass, other, vocals) ready to drag into FL Studio.
+Paste a YouTube beat link and get a WAV file ready to drag into FL Studio.
 
 ## What it does
 
-1. Downloads audio from YouTube
-2. Runs AI stem separation (Meta Demucs)
-3. Gives you individual `.wav` files or a ZIP of all stems
+1. Downloads the audio from YouTube
+2. Converts it to `.wav`
+3. Lets you download the beat for FL Studio
 
 ## Requirements
 
 - Python 3.10+
-- ~2 GB free disk space (PyTorch + Demucs model on first run)
-- GPU optional (CPU works, but separation is slower)
 
 ## Setup
 
@@ -21,9 +19,7 @@ cd musically
 python -m venv venv
 venv\Scripts\activate        # Windows
 cd backend
-pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt
-pip install demucs
 ```
 
 ## Run
@@ -34,28 +30,17 @@ cd backend && python run.py
 
 Open **http://127.0.0.1:8000** in your browser.
 
-## Using stems in FL Studio
+## Using in FL Studio
 
-1. Download the stems (individual WAV or ZIP)
-2. In FL Studio: **File → Import → Audio file** (or drag WAV files into the Playlist)
-3. Each stem loads as its own track — drums, bass, instruments, vocals
+1. Download the `.wav`
+2. Drag it into the FL Studio Playlist, or use **File → Import → Audio file**
 
 WAV is uncompressed and FL Studio's native format, so no conversion needed.
 
-## Stems explained
-
-| Stem | What's in it |
-|------|-------------|
-| **drums** | Kick, snare, hi-hats, percussion |
-| **bass** | Bass line and low-end |
-| **other** | Melody, synths, keys, guitars |
-| **vocals** | Any vocals or vocal samples |
-
 ## Notes
 
-- First run downloads the Demucs model (~80 MB) — one-time setup
-- Longer beats take more time to separate (especially on CPU)
 - For personal/educational use — respect YouTube terms and copyright
+- YouTube may block downloads from cloud servers; if that happens, upload the audio file instead
 
 ## Deploy online (Vercel + Render)
 
@@ -64,9 +49,9 @@ This app has two parts:
 | Part | Host | Why |
 |------|------|-----|
 | **Frontend** (UI) | [Vercel](https://vercel.com) | Static site — fast and free |
-| **Backend** (API + AI) | [Render](https://render.com) | Python + PyTorch + Demucs need a real server |
+| **Backend** (API) | [Render](https://render.com) | Python downloader needs a real server |
 
-Vercel cannot run the stem separation backend (PyTorch is ~200 MB, jobs take minutes).
+Vercel cannot run the YouTube download backend.
 
 ### 1. Push to GitHub
 
