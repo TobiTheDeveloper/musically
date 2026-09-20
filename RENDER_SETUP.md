@@ -1,28 +1,22 @@
-# Render Setup — READ THIS
+# Render Setup
 
-Render **does not** auto-update your build/start commands from GitHub.
-You must edit them manually in the dashboard **once**.
+The latest commit makes Render's **default** start command work:
 
-## Go to: Dashboard → musically → Settings
+`gunicorn your_application.wsgi`
 
-### 1. Build Command
-```
-bash build.sh
-```
-*(Or leave default `pip install -r requirements.txt` — both work now.)*
+You do **not** have to change the Start Command anymore. Just redeploy.
 
-### 2. Start Command — REQUIRED, replace the gunicorn default
-```
-cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
-```
+## Still recommended in Settings
 
-### 3. Environment Variables
-| Key | Value |
-|-----|--------|
+| Field | Value |
+|-------|--------|
+| **Instance type** | Starter ($7/mo) or higher — not Free |
 | `PYTHON_VERSION` | `3.11.11` |
-| `ALLOWED_ORIGINS` | `https://your-app.vercel.app` |
+| `ALLOWED_ORIGINS` | your Vercel URL |
 
-### 4. Instance Type
-Use **Starter ($7/mo)** minimum. Free tier will crash.
+## Optional (cleaner, same result)
 
-### 5. Save Changes → Manual Deploy → Deploy latest commit
+If you want to set commands yourself:
+
+- **Build:** `pip install -r requirements.txt`
+- **Start:** `cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT`

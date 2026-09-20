@@ -5,3 +5,5 @@ render.yaml
 requirements.txt
 .python-version
 Procfile
+your_application/
+gunicorn.conf.py
