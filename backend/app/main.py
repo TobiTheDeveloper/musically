@@ -18,11 +18,13 @@ BASE_DIR = BACKEND_DIR
 
 app = FastAPI(title="Musically", description="YouTube beat stem extractor for FL Studio")
 
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+raw_origins = os.getenv("ALLOWED_ORIGINS", "*")
+allowed_origins = [o.strip() for o in raw_origins.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -56,6 +58,11 @@ async def app_js():
 @app.get("/config.js")
 async def config_js():
     return FileResponse(STATIC_DIR / "config.js", media_type="application/javascript")
+
+
+@app.get("/api/health")
+async def health():
+    return {"ok": True, "service": "musically-api"}
 
 
 @app.post("/api/process")

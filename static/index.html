@@ -35,6 +35,15 @@
         <button id="extract-btn" type="button">Extract Stems</button>
       </div>
       <p class="hint">Outputs WAV stems: drums, bass, other, vocals — drag straight into FL Studio.</p>
+      <label for="api-url-input" class="label api-label">Backend URL (Render)</label>
+      <input
+        id="api-url-input"
+        type="url"
+        placeholder="https://musically-xxxx.onrender.com"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <p id="api-status" class="hint"></p>
     </section>
 
     <section id="progress-section" class="card progress-card hidden">
