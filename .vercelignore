@@ -2,3 +2,6 @@ backend/
 build.sh
 runtime.txt
 render.yaml
+requirements.txt
+.python-version
+Procfile
